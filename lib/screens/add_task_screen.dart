@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_task_manager/utlis/notification_helper.dart';
 import 'package:firebase_task_manager/widgets/button.dart';
 import 'package:firebase_task_manager/widgets/field_label.dart';
 import 'package:flutter/material.dart';
@@ -103,6 +105,18 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       'isDone': task.isDone,
     });
 
+    await NotificationHelper.scheduledNotification(
+      RemoteMessage(
+        notification: RemoteNotification(
+          title: 'Task Reminder',
+          body: 'You have a task due: ${task.title}',
+        ),
+        data: {'taskId': task.id},
+      ),
+      DateTime.now().add(const Duration(seconds: 5)),
+    );
+
+    if (!mounted) return;
     Navigator.of(context).pop(task);
   }
 

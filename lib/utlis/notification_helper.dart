@@ -51,6 +51,11 @@ class NotificationHelper {
               importance: Importance.max,
             ),
           );
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.requestExactAlarmsPermission();
     } else if (Platform.isIOS) {
       await _plugin
           .resolvePlatformSpecificImplementation<
@@ -86,7 +91,9 @@ class NotificationHelper {
       id: Random().nextInt(1000), // Unique ID for each notification
       title: message.notification?.title ?? "Scheduled Task",
       body: message.notification?.body ?? "You have a scheduled task",
-      scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
+      scheduledDate: tz.TZDateTime.now(
+        tz.local,
+      ).add(scheduledTime.difference(DateTime.now())),
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'channel_id',
