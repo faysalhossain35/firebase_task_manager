@@ -2,12 +2,15 @@ import 'dart:io';
 import 'dart:math';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class NotificationHelper {
   static final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
   static Future<void> initNotification() async {
+    tz.initializeTimeZones();
     // 1. Android settings
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -72,6 +75,28 @@ class NotificationHelper {
         ),
         iOS: DarwinNotificationDetails(),
       ),
+    );
+  }
+
+  static Future<void> scheduledNotification(
+    RemoteMessage message,
+    DateTime scheduledTime,
+  ) async {
+    await _plugin.zonedSchedule(
+      id: Random().nextInt(1000), // Unique ID for each notification
+      title: message.notification?.title ?? "Scheduled Task",
+      body: message.notification?.body ?? "You have a scheduled task",
+      scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'channel_id',
+          'Notifications Channel',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 }
